@@ -1,0 +1,5 @@
+.gradle/
+build/
+android_app/.gradle/
+android_app/build/
+android_app/app/build/
