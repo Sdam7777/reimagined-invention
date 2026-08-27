@@ -4,29 +4,73 @@ import json
 import os
 import sys
 import websockets
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import threading
 
 CLIENTS = set()
 USERS = {}  # username -> password memory store
 
-# Dynamic Patch v3.0 (Major UI & Feature Overhaul)
+# Unified Multi-Layer Update Metadata (Plan A + B + C)
 PATCH_DATA = {
-    "version": 3,
-    "theme": {
-        "primary_color": "#2E7D32",       # Dark Green theme for major update
-        "header_title": "ChatApp Ultimate (v3.0 Dynamic)",
-        "welcome_banner": "🔥 Update Besai (v3.0): Sistem Auth & UI Baru Terapkan Tanpa Reinstall!",
-        "card_bg_color": "#E8F5E9"
+    "version": 4,
+    "strategy": "UNIFIED_ALL",  # Plan A (Hot Patch) + Plan B (In-App APK Auto-Install) + Plan C (Dynamic Fallback)
+
+    # PLAN A: Dynamic Hot-Patch (Live UI & Config Overhaul without restart/reinstall)
+    "plan_a_hotpatch": {
+        "enabled": True,
+        "theme": {
+            "primary_color": "#D32F2F",       # Deep Red Premium Update
+            "header_title": "ChatApp Multi-Guard (v4.0)",
+            "welcome_banner": "🛡️ Unified Auto-Update Active (Plan A+B+C): Bebas Reinstall Selamanya!",
+            "card_bg_color": "#FFEBEE"
+        },
+        "features": {
+            "enable_auth": True,
+            "enable_emojis": True,
+            "show_timestamps": True,
+            "max_message_length": 2000,
+            "auto_retry_connection": True
+        }
     },
-    "features": {
-        "enable_auth": True,
-        "enable_emojis": True,
-        "show_timestamps": True,
-        "max_message_length": 1000,
-        "require_login": True
+
+    # PLAN B: In-App Direct APK Auto-Installer (Auto-Download & Install without browser/uninstall)
+    "plan_b_apk_installer": {
+        "enabled": True,
+        "latest_version_code": 4,
+        "latest_version_name": "4.0.0",
+        "apk_download_url": "http://34.230.183.187:8080/download/app-debug.apk",
+        "force_update": False,
+        "update_notes": "Update v4.0: Fitur Keamanan Multi-Layer, Auto-Repair, dan In-App Installer!"
+    },
+
+    # PLAN C: Dynamic Fallback Hybrid UI Engine
+    "plan_c_hybrid": {
+        "enabled": True,
+        "remote_component_js": "console.log('Plan C Dynamic Engine active');"
     }
 }
 
-async def handler(websocket, path):
+class ApkHttpHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/download/app-debug.apk":
+            apk_path = "/home/ec2-user/chat_server/app-debug.apk"
+            if os.path.exists(apk_path):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/vnd.android.package-archive')
+                self.send_header('Content-Length', os.path.getsize(apk_path))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                with open(apk_path, 'rb') as f:
+                    self.wfile.write(f.read())
+                return
+        self.send_error(404, "File not found")
+
+def start_http_server():
+    httpd = HTTPServer(('0.0.0.0', 8080), ApkHttpHandler)
+    print("HTTP Server running on port 8080")
+    httpd.serve_forever()
+
+async def websocket_handler(websocket, path):
     print(f"Client connected from {websocket.remote_address}")
     CLIENTS.add(websocket)
     current_user = None
@@ -89,10 +133,11 @@ async def handler(websocket, path):
         print(f"Client disconnected: {websocket.remote_address}")
 
 async def main():
+    threading.Thread(target=start_http_server, daemon=True).start()
     host = "0.0.0.0"
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 80
-    print(f"Starting Chat & Auth Server on ws://{host}:{port}")
-    async with websockets.serve(handler, host, port):
+    print(f"Starting Multi-Guard Chat Server on ws://{host}:{port}")
+    async with websockets.serve(websocket_handler, host, port):
         await asyncio.Future()
 
 if __name__ == "__main__":
