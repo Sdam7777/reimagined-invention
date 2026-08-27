@@ -103,7 +103,11 @@ public class MainActivity extends AppCompatActivity {
         webSocketClient = new WebSocketClient(uri) {
             @Override
             public void onOpen(ServerHandshake handshakedata) {
-                mainHandler.post(() -> Toast.makeText(MainActivity.this, "Terhubung ke server chat!", Toast.LENGTH_SHORT).show());
+                mainHandler.post(() -> {
+                    Toast.makeText(MainActivity.this, "Terhubung ke server chat!", Toast.LENGTH_SHORT).show();
+                    // Automatic update check on app open / connection open
+                    checkUpdate();
+                });
             }
 
             @Override
@@ -155,12 +159,9 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject json = new JSONObject();
                 json.put("type", "check_update");
                 webSocketClient.send(json.toString());
-                Toast.makeText(this, "Mengecek update dari server...", Toast.LENGTH_SHORT).show();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        } else {
-            Toast.makeText(this, "WebSocket tidak terhubung.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -221,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
                 showTimestamps = features.optBoolean("show_timestamps", true);
             }
 
-            Toast.makeText(this, "Dynamic Update Patch v" + patchVersion + " berhasil diterapkan tanpa install ulang APK!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Auto Dynamic Update (v" + patchVersion + ") Berhasil Diterapkan!", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
         }
