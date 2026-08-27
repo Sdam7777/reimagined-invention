@@ -28,7 +28,6 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Connected to open port 80 on VPS srv-01 (34.230.183.187)
     private static final String SERVER_URI = "ws://34.230.183.187:80";
 
     private LinearLayout headerLayout;
@@ -36,8 +35,16 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvBanner;
     private ScrollView scrollView;
     private LinearLayout chatContainer;
-    private EditText etUsername;
+    private LinearLayout authPanel;
+    private LinearLayout chatMainPanel;
+
+    private EditText etAuthUser;
+    private EditText etAuthPass;
     private EditText etMessage;
+    private TextView tvLoggedInUser;
+
+    private Button btnLogin;
+    private Button btnRegister;
     private Button btnSend;
     private Button btnCheckUpdate;
 
@@ -48,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean enableEmojis = false;
     private boolean showTimestamps = true;
     private int patchVersion = 1;
+
+    private String currentUser = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +70,21 @@ public class MainActivity extends AppCompatActivity {
         tvBanner = findViewById(R.id.tvBanner);
         scrollView = findViewById(R.id.scrollView);
         chatContainer = findViewById(R.id.chatContainer);
-        etUsername = findViewById(R.id.etUsername);
+        authPanel = findViewById(R.id.authPanel);
+        chatMainPanel = findViewById(R.id.chatMainPanel);
+
+        etAuthUser = findViewById(R.id.etAuthUser);
+        etAuthPass = findViewById(R.id.etAuthPass);
         etMessage = findViewById(R.id.etMessage);
+        tvLoggedInUser = findViewById(R.id.tvLoggedInUser);
+
+        btnLogin = findViewById(R.id.btnLogin);
+        btnRegister = findViewById(R.id.btnRegister);
         btnSend = findViewById(R.id.btnSend);
         btnCheckUpdate = findViewById(R.id.btnCheckUpdate);
 
+        btnLogin.setOnClickListener(v -> handleAuthAction("login"));
+        btnRegister.setOnClickListener(v -> handleAuthAction("register"));
         btnSend.setOnClickListener(v -> sendMessage());
         btnCheckUpdate.setOnClickListener(v -> checkUpdate());
 
@@ -106,6 +125,30 @@ public class MainActivity extends AppCompatActivity {
         webSocketClient.connect();
     }
 
+    private void handleAuthAction(String action) {
+        String username = etAuthUser.getText().toString().trim();
+        String password = etAuthPass.getText().toString().trim();
+
+        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
+            Toast.makeText(this, "Username & Password wajib diisi!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (webSocketClient != null && webSocketClient.isOpen()) {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("type", action);
+                json.put("username", username);
+                json.put("password", password);
+                webSocketClient.send(json.toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Toast.makeText(this, "Tidak terhubung ke server", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void checkUpdate() {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             try {
@@ -129,6 +172,16 @@ public class MainActivity extends AppCompatActivity {
             if ("update_info".equals(type)) {
                 JSONObject patch = data.getJSONObject("patch");
                 applyHotPatch(patch);
+            } else if ("auth_res".equals(type)) {
+                boolean success = data.optBoolean("success", false);
+                String msg = data.optString("msg", "");
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+
+                if (success && "login".equals(data.optString("action"))) {
+                    currentUser = data.optString("username");
+                    tvLoggedInUser.setText("Login sebagai: " + currentUser);
+                    authPanel.setVisibility(View.GONE);
+                }
             } else if ("chat".equals(type)) {
                 String sender = data.optString("sender", "Anon");
                 String text = data.optString("text", "");
@@ -152,11 +205,14 @@ public class MainActivity extends AppCompatActivity {
                 String primaryColorStr = theme.optString("primary_color", "#1976D2");
                 String headerTitleStr = theme.optString("header_title", "Simple Native Chat");
                 String welcomeBannerStr = theme.optString("welcome_banner", "Welcome");
+                String cardBgColorStr = theme.optString("card_bg_color", "#E8F5E9");
 
                 headerLayout.setBackgroundColor(Color.parseColor(primaryColorStr));
                 btnSend.setBackgroundColor(Color.parseColor(primaryColorStr));
+                btnLogin.setBackgroundColor(Color.parseColor(primaryColorStr));
                 tvHeaderTitle.setText(headerTitleStr);
-                tvBanner.setText(welcomeBannerStr + " (Patch v" + patchVersion + " Applied Live)");
+                tvBanner.setText(welcomeBannerStr);
+                tvBanner.setBackgroundColor(Color.parseColor(cardBgColorStr));
             }
 
             JSONObject features = patch.optJSONObject("features");
@@ -165,19 +221,15 @@ public class MainActivity extends AppCompatActivity {
                 showTimestamps = features.optBoolean("show_timestamps", true);
             }
 
-            Toast.makeText(this, "Dynamic Hot-Patch v" + patchVersion + " berhasil diterapkan tanpa install ulang!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Dynamic Update Patch v" + patchVersion + " berhasil diterapkan tanpa install ulang APK!", Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void sendMessage() {
-        String username = etUsername.getText().toString().trim();
         String text = etMessage.getText().toString().trim();
 
-        if (TextUtils.isEmpty(username)) {
-            username = "User";
-        }
         if (TextUtils.isEmpty(text)) {
             return;
         }
@@ -192,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 JSONObject json = new JSONObject();
                 json.put("type", "chat");
-                json.put("sender", username);
+                json.put("sender", currentUser != null ? currentUser : "Guest");
                 json.put("text", text);
                 json.put("timestamp", timeStr);
                 webSocketClient.send(json.toString());

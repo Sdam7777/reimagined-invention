@@ -47,59 +47,136 @@
         android:textSize="13sp"
         android:gravity="center" />
 
-    <!-- Chat Message List -->
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="12dp">
-
-        <LinearLayout
-            android:id="@+id/chatContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
-
-    <!-- Bottom Controls: Username & Message Input -->
+    <!-- Auth Panel (Login & Create User) -->
     <LinearLayout
+        android:id="@+id/authPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp"
-        android:background="#FFFFFF">
+        android:padding="16dp"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/tvAuthTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Login / Buat Akun Pengguna"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp" />
 
         <EditText
-            android:id="@+id/etUsername"
+            android:id="@+id/etAuthUser"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nama Pengguna"
+            android:hint="Username"
+            android:textSize="14sp"
+            android:lines="1" />
+
+        <EditText
+            android:id="@+id/etAuthPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
             android:textSize="14sp"
             android:lines="1"
-            android:text="User1" />
+            android:layout_marginTop="4dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="8dp">
 
-            <EditText
-                android:id="@+id/etMessage"
+            <Button
+                android:id="@+id/btnLogin"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Ketik pesan..."
-                android:textSize="14sp" />
-
-            <Button
-                android:id="@+id/btnSend"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Kirim"
+                android:text="Login"
                 android:backgroundTint="#1976D2"
                 android:textColor="#FFFFFF" />
+
+            <View
+                android:layout_width="8dp"
+                android:layout_height="1dp" />
+
+            <Button
+                android:id="@+id/btnRegister"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Buat Akun"
+                android:backgroundTint="#388E3C"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Chat Main Panel -->
+    <LinearLayout
+        android:id="@+id/chatMainPanel"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Chat Message List -->
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:id="@+id/chatContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
+        <!-- Bottom Message Input -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:background="#FFFFFF">
+
+            <TextView
+                android:id="@+id/tvLoggedInUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login sebagai: -"
+                android:textSize="12sp"
+                android:textColor="#666666" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <EditText
+                    android:id="@+id/etMessage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Ketik pesan..."
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btnSend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Kirim"
+                    android:backgroundTint="#1976D2"
+                    android:textColor="#FFFFFF" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
