@@ -28,7 +28,8 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String SERVER_URI = "ws://34.230.183.187:8080";
+    // Connected to open port 80 on VPS srv-01 (34.230.183.187)
+    private static final String SERVER_URI = "ws://34.230.183.187:80";
 
     private LinearLayout headerLayout;
     private TextView tvHeaderTitle;
